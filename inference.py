@@ -30,15 +30,19 @@ logger = logging.get_logger("LTX-Video")
 
 
 def get_total_gpu_memory():
+    total_memory = 0
     if torch.cuda.is_available():
         total_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-        return total_memory
-    return 0
+    elif torch.xpu.is_available():
+        total_memory = torch.xpu.get_device_properties(0).total_memory / (1024**3)
+    return total_memory
 
 
 def get_device():
     if torch.cuda.is_available():
         return "cuda"
+    elif torch.xpu.is_available():
+        return "xpu"
     elif torch.backends.mps.is_available():
         return "mps"
     return "cpu"
@@ -158,6 +162,8 @@ def seed_everething(seed: int):
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
+    if torch.xpu.is_available():
+        torch.xpu.manual_seed(seed)
     if torch.backends.mps.is_available():
         torch.mps.manual_seed(seed)
 
